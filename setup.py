@@ -47,7 +47,7 @@ setup(
     },
     include_package_data=True,
     install_requires=[
-        "stanza",
+        "spacy",
         "marisa-trie",
     ],
     # List additional groups of dependencies here (e.g. development

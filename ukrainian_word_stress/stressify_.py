@@ -7,8 +7,8 @@ from ukrainian_word_stress.mutable_text import MutableText
 from ukrainian_word_stress.tags import TAGS, decompress_tags
 
 import marisa_trie
-import stanza
-
+import spacy
+from spacy.cli import download
 
 log = logging.getLogger(__name__)
 
@@ -59,12 +59,13 @@ class Stressifier:
         
         self.dict = marisa_trie.BytesTrie()
         self.dict.load(dict_path)
-        self.nlp = stanza.Pipeline(
-            'uk',
-            processors='tokenize,pos,mwt',
-            download_method=stanza.pipeline.core.DownloadMethod.REUSE_RESOURCES,
-            logging_level=logging.getLevelName(log.getEffectiveLevel())
-        )
+        # Changed to spaCy pipeline
+        try:
+            self.nlp = spacy.load("uk_core_news_lg")
+        except OSError:
+            download("uk_core_news_lg")
+            self.nlp = spacy.load("uk_core_news_lg")
+        
         self.stress_symbol = stress_symbol
         self.on_ambiguity = on_ambiguity
 
@@ -72,11 +73,17 @@ class Stressifier:
         parsed = self.nlp(text)
         result = MutableText(text)
         log.debug("Parsed text: %s", parsed)
-        for token in parsed.iter_tokens():
-            accents = find_accent_positions(self.dict, token.to_dict()[0], self.on_ambiguity)
+        # Changed to match spaCy structure
+        for token in parsed:
+            token_dict = {
+                "text": token.text,
+                "feats": str(token.morph) if token.morph else "",
+                "upos": token.pos_
+            }
+            accents = find_accent_positions(self.dict, token_dict, self.on_ambiguity)
             accented_token = self._apply_accent_positions(token.text, accents)
             if accented_token != token:
-                result.replace(token.start_char, token.end_char, accented_token)
+                result.replace(token.idx, token.idx + len(token.text), accented_token)
 
         return result.get_edited_text()
 
@@ -126,7 +133,8 @@ def find_accent_positions(trie, parse, on_ambiguity=OnAmbiguity.Skip) -> List[in
     # Parse tags is a superset of dictionary tags. They include more
     # irrelevant info. They also and lack `upos` which we add separately
     log.debug("Resolving ambigous entry %s", base)
-    feats = parse.get('feats', '').split('|') + [f'upos={parse.get("upos", "")}']
+    # Changed to match spaCy structure
+    feats = parse.get('feats', '').split('|') if parse.get("feats") else [] 
     matches = []
     for tags, accents in accents_by_tags:
         if all(tag in feats for tag in tags):

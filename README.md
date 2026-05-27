@@ -1,5 +1,7 @@
 Ukrainian word stress
 =====================
+This fork is an identical package with spaCy replacing Stanza. So, if your project depends on spaCy you wouldn't have to download Stanza as well.
+=====================
 
 Word stress is an emphasis we place on a particular syllable of a word as
 we pronounce it: ма́ма
@@ -57,8 +59,7 @@ $ echo 'Золоті яйця, але нема ні яйця' | ukrainian-word-s
 $ pip install ukrainian-word-stress
 ```
 
-Note, that on the first call this will download around 500M of Stanza resources.
-The default location for this is `~/stanza_resources`
+Note, that on the first call this will download around 400M of Stanza resources.
 
 
 ## Handling ambiguity
@@ -73,7 +74,7 @@ For example:
 * бло́хи - множина називного відмінку ("повсюди були бло́хи")
 
 We handle this more or less correctly by doing morphological and POS text parse
-with Stanza.
+with spaCy.
 
 A much smaller category of heteronyms is where words have completely different meanings:
 
