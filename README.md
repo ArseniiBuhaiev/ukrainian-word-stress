@@ -56,7 +56,7 @@ $ echo 'Золоті яйця, але нема ні яйця' | ukrainian-word-s
 ## Setup
 
 ```bash
-$ pip install ukrainian-word-stress
+$ pip install git+https://github.com/ArseniiBuhaiev/ukrainian-word-stress.git
 ```
 
 Note, that on the first call this will download around 400M of Stanza resources.
